@@ -10,9 +10,17 @@ export async function middleware(request: NextRequest) {
 
   const isAuthPage = request.nextUrl.pathname.startsWith('/login');
   const isApiAuth = request.nextUrl.pathname.startsWith('/api/auth');
+  const isApi = request.nextUrl.pathname.startsWith('/api');
 
   if (isApiAuth) {
     return NextResponse.next();
+  }
+
+  if (isApi) {
+    if (token) {
+      return NextResponse.next();
+    }
+    return NextResponse.json({ error: 'Требуется авторизация' }, { status: 401 });
   }
 
   if (isAuthPage) {
