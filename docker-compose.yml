@@ -31,11 +31,16 @@ services:
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/status
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-status-production-secret-change-me}
       NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
+      NODE_ENV: production
     depends_on:
       postgres:
         condition: service_healthy
-    command: >
-      sh -c "npx drizzle-kit migrate && npm run dev"
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -qO- http://localhost:3000/ || exit 1']
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
 
 volumes:
   postgres_data:

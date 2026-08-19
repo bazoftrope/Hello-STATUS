@@ -14,28 +14,33 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(401).json({ error: 'Требуется авторизация' });
   }
 
-  if (req.method === 'GET') {
-    const includeArchived =
-      session.user.role === 'manager' &&
-      (req.query.includeArchived === 'true' || req.query.includeArchived === '1');
-    const result = await getByDepartment(session.user.departmentId, includeArchived);
-    return res.status(200).json(result);
-  }
-
-  if (req.method === 'POST') {
-    if (session.user.role !== 'manager') {
-      return res.status(403).json({ error: 'Недостаточно прав' });
+  try {
+    if (req.method === 'GET') {
+      const includeArchived =
+        session.user.role === 'manager' &&
+        (req.query.includeArchived === 'true' || req.query.includeArchived === '1');
+      const result = await getByDepartment(session.user.departmentId, includeArchived);
+      return res.status(200).json(result);
     }
 
-    const { errors, values } = validateCreateInput(req.body);
-    if (!values) {
-      return res.status(400).json({ error: errors.join('; ') });
+    if (req.method === 'POST') {
+      if (session.user.role !== 'manager') {
+        return res.status(403).json({ error: 'Недостаточно прав' });
+      }
+
+      const { errors, values } = validateCreateInput(req.body);
+      if (!values) {
+        return res.status(400).json({ error: errors.join('; ') });
+      }
+
+      const created = await create(session.user.departmentId, values);
+      return res.status(201).json(created);
     }
 
-    const created = await create(session.user.departmentId, values);
-    return res.status(201).json(created);
+    res.setHeader('Allow', 'GET, POST');
+    return res.status(405).json({ error: 'Метод не поддерживается' });
+  } catch (err) {
+    console.error(`[API] ${req.method} /api/parameters:`, err);
+    return res.status(500).json({ error: 'Внутренняя ошибка сервера' });
   }
-
-  res.setHeader('Allow', 'GET, POST');
-  return res.status(405).json({ error: 'Метод не поддерживается' });
 }

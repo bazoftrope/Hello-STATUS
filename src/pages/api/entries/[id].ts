@@ -2,10 +2,12 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/server/auth';
 import {
-  getById,
+  EntryError,
+  getRawById,
+  remove,
   update,
   validateUpdateInput,
-} from '@/server/services/parameters';
+} from '@/server/services/entries';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -16,35 +18,36 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(401).json({ error: 'Требуется авторизация' });
   }
 
-  if (session.user.role !== 'manager') {
-    return res.status(403).json({ error: 'Недостаточно прав' });
-  }
-
   const { id } = req.query;
   if (typeof id !== 'string' || !UUID_RE.test(id)) {
-    return res.status(400).json({ error: 'Некорректный идентификатор параметра' });
+    return res.status(400).json({ error: 'Некорректный идентификатор записи' });
   }
 
   try {
-    const existing = await getById(id);
-    if (!existing || existing.departmentId !== session.user.departmentId) {
-      return res.status(404).json({ error: 'Параметр не найден' });
-    }
-
     if (req.method === 'PATCH') {
       const { errors, values } = validateUpdateInput(req.body);
       if (!values) {
         return res.status(400).json({ error: errors.join('; ') });
       }
-
-      const result = await update(id, values);
+      const result = await update(id, session.user, values);
       return res.status(200).json(result);
     }
 
-    res.setHeader('Allow', 'PATCH');
+    if (req.method === 'DELETE') {
+      const existing = await getRawById(id);
+      if (!existing) {
+        return res.status(404).json({ error: 'Запись не найдена' });
+      }
+      await remove(id, session.user);
+      return res.status(200).json({ success: true });
+    }
+
+    res.setHeader('Allow', 'PATCH, DELETE');
     return res.status(405).json({ error: 'Метод не поддерживается' });
   } catch (err) {
-    console.error(`[API] ${req.method} /api/parameters/${id}:`, err);
-    return res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+    if (err instanceof EntryError) {
+      return res.status(err.status).json({ error: err.message });
+    }
+    throw err;
   }
 }

@@ -69,9 +69,8 @@ export const auditLog = pgTable('audit_log', {
   actorId: uuid('actor_id')
     .references(() => users.id)
     .notNull(),
-  entryId: uuid('entry_id')
-    .references(() => entries.id)
-    .notNull(),
+  entryId: uuid('entry_id').notNull(),
+  entryUserId: uuid('entry_user_id').notNull(),
   action: varchar('action', { length: 50 }).notNull(),
   oldValue: text('old_value'),
   newValue: text('new_value'),

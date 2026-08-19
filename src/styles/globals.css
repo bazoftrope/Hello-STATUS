@@ -230,6 +230,11 @@ textarea {
 }
 
 /* Tables */
+.table-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 .table {
   width: 100%;
   border-collapse: collapse;
@@ -397,16 +402,112 @@ textarea {
   gap: var(--spacing-md);
 }
 
+/* Header & Navigation */
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.hamburger {
+  display: none;
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: 1.25rem;
+  color: var(--color-text);
+  cursor: pointer;
+  line-height: 1;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.nav-links a {
+  white-space: nowrap;
+  font-size: 0.875rem;
+}
+
+.nav-links a.active {
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.nav-user {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-left: var(--spacing-sm);
+  padding-left: var(--spacing-md);
+  border-left: 1px solid var(--color-border);
+}
+
 /* Responsive */
+@media (max-width: 1024px) {
+  .container {
+    max-width: 100%;
+  }
+}
+
 @media (max-width: 768px) {
   .container {
     padding: 0 var(--spacing-sm);
   }
 
+  .hamburger {
+    display: block;
+  }
+
+  .nav-links {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: var(--color-surface);
+    border-bottom: 1px solid var(--color-border);
+    box-shadow: var(--shadow-md);
+    flex-direction: column;
+    align-items: stretch;
+    padding: var(--spacing-sm) var(--spacing-md);
+    gap: 0;
+    z-index: 100;
+  }
+
+  .nav-links.nav-open {
+    display: flex;
+  }
+
+  .nav-links a {
+    padding: var(--spacing-sm) 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .nav-links a:last-of-type {
+    border-bottom: none;
+  }
+
+  .nav-user {
+    margin-left: 0;
+    padding-left: 0;
+    padding-top: var(--spacing-sm);
+    border-left: none;
+    border-top: 1px solid var(--color-border);
+    justify-content: space-between;
+  }
+
+  .page-header {
+    position: relative;
+  }
+
   .table th,
   .table td {
     padding: var(--spacing-xs) var(--spacing-sm);
-    font-size: 0.875rem;
+    font-size: 0.8125rem;
   }
 
   .btn {
@@ -414,6 +515,11 @@ textarea {
   }
 
   .modal {
-    margin: var(--spacing-md);
+    margin: var(--spacing-sm);
+    max-height: 95vh;
+  }
+
+  .card-body {
+    padding: var(--spacing-sm);
   }
 }

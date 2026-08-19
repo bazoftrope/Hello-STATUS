@@ -265,6 +265,7 @@ export default function ParametersPage() {
               Параметры не найдены. Добавьте первый параметр.
             </p>
           ) : (
+            <div className="table-wrapper">
             <table className="table">
               <thead>
                 <tr>
@@ -311,6 +312,7 @@ export default function ParametersPage() {
                 ))}
               </tbody>
             </table>
+            </div>
           )}
         </div>
       </div>
