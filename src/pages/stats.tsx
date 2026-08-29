@@ -1,6 +1,18 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Head from 'next/head';
 import { Layout } from '@/components/Layout';
+import {
+  Alert,
+  Button,
+  Card,
+  CardBody,
+  CardHeader,
+  FormInput,
+  PageHeader,
+  Table,
+  Td,
+  Th,
+} from '@/components/ui';
 import {
   monthStartISO,
   quarterStartISO,
@@ -8,6 +20,7 @@ import {
   weekStartISO,
   yearStartISO,
 } from '@/lib/dates';
+import styles from './stats.module.css';
 
 interface DailyStat {
   date: string;
@@ -90,7 +103,7 @@ function DailyChart({ data }: { data: DailyStat[] }) {
   const plotHeight = chartHeight - padding.top - padding.bottom;
 
   return (
-    <div style={{ overflowX: 'auto' }}>
+    <div className={styles.chartScroll}>
       <svg width={chartWidth + padding.left + padding.right} height={chartHeight}>
         {[0, 0.25, 0.5, 0.75, 1].map((frac) => {
           const y = padding.top + plotHeight * (1 - frac);
@@ -102,14 +115,14 @@ function DailyChart({ data }: { data: DailyStat[] }) {
                 y1={y}
                 x2={chartWidth + padding.left}
                 y2={y}
-                stroke="#e5e7eb"
+                stroke="var(--color-border)"
                 strokeDasharray="4"
               />
               <text
                 x={padding.left - 8}
                 y={y + 4}
                 textAnchor="end"
-                fill="#9ca3af"
+                fill="var(--color-text-muted)"
                 fontSize="11"
               >
                 {val}
@@ -137,7 +150,7 @@ function DailyChart({ data }: { data: DailyStat[] }) {
                 x={x + barWidth / 2}
                 y={y - 5}
                 textAnchor="middle"
-                fill="#111827"
+                fill="var(--color-text)"
                 fontSize="10"
                 fontWeight="600"
               >
@@ -147,7 +160,7 @@ function DailyChart({ data }: { data: DailyStat[] }) {
                 x={x + barWidth / 2}
                 y={chartHeight - padding.bottom + 15}
                 textAnchor="middle"
-                fill="#6b7280"
+                fill="var(--color-text-secondary)"
                 fontSize="10"
                 transform={`rotate(-45, ${x + barWidth / 2}, ${chartHeight - padding.bottom + 15})`}
               >
@@ -182,7 +195,7 @@ function ParameterChart({ data }: { data: ParameterStat[] }) {
               x={labelWidth - 8}
               y={y + barHeight / 2 + 4}
               textAnchor="end"
-              fill="#111827"
+              fill="var(--color-text)"
               fontSize="12"
             >
               {d.parameterName}
@@ -198,7 +211,7 @@ function ParameterChart({ data }: { data: ParameterStat[] }) {
             <text
               x={labelWidth + barW + 8}
               y={y + barHeight / 2 + 4}
-              fill="#111827"
+              fill="var(--color-text)"
               fontSize="12"
               fontWeight="600"
             >
@@ -251,140 +264,121 @@ export default function StatsPage() {
         <title>Статистика - Статус</title>
       </Head>
 
-      <div className="flex items-center justify-between mb-lg">
-        <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Моя статистика</h2>
-      </div>
+      <PageHeader title="Моя статистика" />
 
-      <div className="card mb-lg" style={{ padding: 'var(--spacing-md)' }}>
-        <div className="flex items-center gap-sm" style={{ flexWrap: 'wrap' }}>
+      <Card padding="md" className="mb-lg">
+        <div className={`flex items-center gap-sm ${styles.filterWrap}`}>
           {(Object.keys(PERIOD_LABELS) as PeriodKey[]).map((key) => (
-            <button
+            <Button
               key={key}
-              className={`btn btn-sm ${period === key ? 'btn-primary' : 'btn-outline'}`}
+              size="sm"
+              variant={period === key ? 'primary' : 'outline'}
               onClick={() => setPeriod(key)}
             >
               {PERIOD_LABELS[key]}
-            </button>
+            </Button>
           ))}
 
           {period === 'custom' && (
             <>
-              <input
-                className="form-input"
+              <FormInput
+                autoWidth
                 type="date"
                 value={customFrom}
                 max={customTo}
                 onChange={(e) => setCustomFrom(e.target.value)}
-                style={{ width: 'auto' }}
               />
               <span className="text-muted">—</span>
-              <input
-                className="form-input"
+              <FormInput
+                autoWidth
                 type="date"
                 value={customTo}
                 min={customFrom}
                 max={todayISO()}
                 onChange={(e) => setCustomTo(e.target.value)}
-                style={{ width: 'auto' }}
               />
             </>
           )}
         </div>
-      </div>
+      </Card>
 
-      {error && <div className="alert alert-error mb-lg">{error}</div>}
+      {error && <Alert variant="error" style={{ marginBottom: 'var(--spacing-lg)' }}>{error}</Alert>}
 
       {isLoading ? (
-        <div className="card">
-          <div className="card-body">
-            <p className="text-muted text-center" style={{ padding: '2rem' }}>
-              Загрузка...
-            </p>
-          </div>
-        </div>
+        <Card>
+          <CardBody>
+            <p className={`text-muted text-center ${styles.emptyState}`}>Загрузка...</p>
+          </CardBody>
+        </Card>
       ) : stats ? (
         <>
-          <div className="flex gap-md mb-lg" style={{ flexWrap: 'wrap' }}>
-            <div className="card" style={{ padding: 'var(--spacing-md)', flex: '1 1 200px' }}>
-              <p className="text-muted" style={{ fontSize: '0.75rem' }}>
-                Всего баллов
-              </p>
-              <p style={{ fontSize: '1.75rem', fontWeight: 700 }}>
-                {formatWeight(stats.totalPoints)}
-              </p>
-            </div>
-            <div className="card" style={{ padding: 'var(--spacing-md)', flex: '1 1 200px' }}>
-              <p className="text-muted" style={{ fontSize: '0.75rem' }}>
-                Всего записей
-              </p>
-              <p style={{ fontSize: '1.75rem', fontWeight: 700 }}>
-                {stats.totalEntries}
-              </p>
-            </div>
-            <div className="card" style={{ padding: 'var(--spacing-md)', flex: '1 1 200px' }}>
-              <p className="text-muted" style={{ fontSize: '0.75rem' }}>
-                Параметров
-              </p>
-              <p style={{ fontSize: '1.75rem', fontWeight: 700 }}>
-                {stats.byParameter.length}
-              </p>
-            </div>
+          <div className={styles.statCardsWrap}>
+            <Card padding="md" className={styles.statCard}>
+              <p className={`text-muted ${styles.statLabel}`}>Всего баллов</p>
+              <p className={styles.statValue}>{formatWeight(stats.totalPoints)}</p>
+            </Card>
+            <Card padding="md" className={styles.statCard}>
+              <p className={`text-muted ${styles.statLabel}`}>Всего записей</p>
+              <p className={styles.statValue}>{stats.totalEntries}</p>
+            </Card>
+            <Card padding="md" className={styles.statCard}>
+              <p className={`text-muted ${styles.statLabel}`}>Параметров</p>
+              <p className={styles.statValue}>{stats.byParameter.length}</p>
+            </Card>
           </div>
 
           {stats.daily.length > 0 && (
-            <div className="card mb-lg">
-              <div className="card-header">
+            <Card className="mb-lg">
+              <CardHeader>
                 <strong>Баллы по дням</strong>
-              </div>
-              <div className="card-body">
+              </CardHeader>
+              <CardBody>
                 <DailyChart data={stats.daily} />
-              </div>
-            </div>
+              </CardBody>
+            </Card>
           )}
 
           {stats.byParameter.length > 0 && (
-            <div className="card mb-lg">
-              <div className="card-header">
+            <Card className="mb-lg">
+              <CardHeader>
                 <strong>Разрез по параметрам</strong>
-              </div>
-              <div className="card-body" style={{ overflowX: 'auto' }}>
+              </CardHeader>
+              <CardBody className={styles.chartScroll}>
                 <ParameterChart data={stats.byParameter} />
-              </div>
-            </div>
+              </CardBody>
+            </Card>
           )}
 
           {stats.byParameter.length > 0 && (
-            <div className="card">
-              <div className="card-header">
+            <Card>
+              <CardHeader>
                 <strong>Детали по параметрам</strong>
-              </div>
-              <div className="card-body">
-                <div className="table-wrapper">
-                <table className="table">
+              </CardHeader>
+              <CardBody>
+                <Table>
                   <thead>
                     <tr>
-                      <th>Параметр</th>
-                      <th style={{ textAlign: 'center' }}>Кол-во</th>
-                      <th style={{ textAlign: 'center' }}>Записей</th>
-                      <th style={{ textAlign: 'right' }}>Баллы</th>
+                      <Th>Параметр</Th>
+                      <Th align="center">Кол-во</Th>
+                      <Th align="center">Записей</Th>
+                      <Th align="right">Баллы</Th>
                     </tr>
                   </thead>
                   <tbody>
                     {stats.byParameter.map((p) => (
                       <tr key={p.parameterId}>
-                        <td>{p.parameterName}</td>
-                        <td style={{ textAlign: 'center' }}>{p.totalQuantity}</td>
-                        <td style={{ textAlign: 'center' }}>{p.entryCount}</td>
-                        <td style={{ textAlign: 'right', fontWeight: 600 }}>
+                        <Td>{p.parameterName}</Td>
+                        <Td align="center">{p.totalQuantity}</Td>
+                        <Td align="center">{p.entryCount}</Td>
+                        <Td align="right" semibold>
                           {formatWeight(p.totalPoints)}
-                        </td>
+                        </Td>
                       </tr>
                     ))}
                   </tbody>
-                </table>
-                </div>
-              </div>
-            </div>
+                </Table>
+              </CardBody>
+            </Card>
           )}
         </>
       ) : null}

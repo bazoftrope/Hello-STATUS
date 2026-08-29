@@ -59,7 +59,7 @@ export const authOptions: NextAuthOptions = {
         const foundUser = user[0];
 
         if (!foundUser.isActive) {
-          throw new Error('Аккаунт деактивирован');
+          throw new Error('Аккаунт не активирован. Дождитесь подтверждения руководителя');
         }
 
         const isPasswordValid = await bcrypt.compare(

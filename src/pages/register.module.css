@@ -1,0 +1,38 @@
+.registerCard {
+  width: 90%;
+  max-width: 400px;
+}
+
+.registerTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.registerSubtitle {
+  margin-top: 0.5rem;
+}
+
+.divider {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.hintText {
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+.loginLink {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.loginLink:hover {
+  text-decoration: underline;
+}
+
+.successActions {
+  margin-top: 1.5rem;
+  text-align: center;
+}

@@ -1,0 +1,31 @@
+.emptyState {
+  padding: 2rem;
+}
+
+.filterWrap {
+  flex-wrap: wrap;
+}
+
+.statCardsWrap {
+  display: flex;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+  margin-bottom: var(--spacing-lg);
+}
+
+.statCard {
+  flex: 1 1 200px;
+}
+
+.statLabel {
+  font-size: 0.75rem;
+}
+
+.statValue {
+  font-size: 1.75rem;
+  font-weight: 700;
+}
+
+.chartScroll {
+  overflow-x: auto;
+}

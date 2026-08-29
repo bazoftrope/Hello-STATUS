@@ -1,7 +1,26 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Head from 'next/head';
 import { Layout } from '@/components/Layout';
+import {
+  Alert,
+  Button,
+  Card,
+  CardBody,
+  FormGroup,
+  FormInput,
+  FormLabel,
+  FormTextarea,
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
+  PageHeader,
+  Table,
+  Td,
+  Th,
+} from '@/components/ui';
 import { todayISO } from '@/lib/dates';
+import styles from './index.module.css';
 
 interface Parameter {
   id: string;
@@ -48,29 +67,26 @@ function EntryFormModal({ parameterName, isSaving, onSubmit, onClose }: EntryFor
   };
 
   return (
-    <div className="modal-overlay">
-      <form className="modal" onSubmit={handleSubmit}>
-        <div className="modal-header">
-          <h3 style={{ fontSize: '1.125rem', fontWeight: 600 }}>Добавить действие</h3>
-          <button type="button" className="btn btn-outline btn-sm" onClick={onClose} disabled={isSaving}>
+    <Modal onClose={onClose}>
+      <form onSubmit={handleSubmit}>
+        <ModalHeader>
+          <h3 className={styles.modalTitle}>Добавить действие</h3>
+          <Button type="button" variant="outline" size="sm" onClick={onClose} disabled={isSaving}>
             Закрыть
-          </button>
-        </div>
+          </Button>
+        </ModalHeader>
 
-        <div className="modal-body">
-          {error && <div className="alert alert-error">{error}</div>}
+        <ModalBody>
+          {error && <Alert variant="error">{error}</Alert>}
 
-          <p className="text-muted mb-md" style={{ fontSize: '0.875rem' }}>
-            Параметр: <strong style={{ color: 'var(--color-text)' }}>{parameterName}</strong>
+          <p className={`text-muted mb-md ${styles.parameterHint}`}>
+            Параметр: <strong>{parameterName}</strong>
           </p>
 
-          <div className="form-group">
-            <label className="form-label" htmlFor="entry-quantity">
-              Количество
-            </label>
-            <input
+          <FormGroup>
+            <FormLabel htmlFor="entry-quantity">Количество</FormLabel>
+            <FormInput
               id="entry-quantity"
-              className="form-input"
               type="number"
               min={1}
               max={100000}
@@ -80,15 +96,12 @@ function EntryFormModal({ parameterName, isSaving, onSubmit, onClose }: EntryFor
               required
               disabled={isSaving}
             />
-          </div>
+          </FormGroup>
 
-          <div className="form-group">
-            <label className="form-label" htmlFor="entry-date">
-              Дата
-            </label>
-            <input
+          <FormGroup>
+            <FormLabel htmlFor="entry-date">Дата</FormLabel>
+            <FormInput
               id="entry-date"
-              className="form-input"
               type="date"
               max={todayISO()}
               value={entryDate}
@@ -96,34 +109,31 @@ function EntryFormModal({ parameterName, isSaving, onSubmit, onClose }: EntryFor
               required
               disabled={isSaving}
             />
-          </div>
+          </FormGroup>
 
-          <div className="form-group">
-            <label className="form-label" htmlFor="entry-comment">
-              Комментарий
-            </label>
-            <textarea
+          <FormGroup>
+            <FormLabel htmlFor="entry-comment">Комментарий</FormLabel>
+            <FormTextarea
               id="entry-comment"
-              className="form-input"
               rows={3}
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               placeholder="Необязательно"
               disabled={isSaving}
             />
-          </div>
-        </div>
+          </FormGroup>
+        </ModalBody>
 
-        <div className="modal-footer">
-          <button type="button" className="btn btn-outline" onClick={onClose} disabled={isSaving}>
+        <ModalFooter>
+          <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>
             Отмена
-          </button>
-          <button type="submit" className="btn btn-primary" disabled={isSaving}>
+          </Button>
+          <Button type="submit" disabled={isSaving}>
             {isSaving ? 'Сохранение...' : 'Сохранить'}
-          </button>
-        </div>
+          </Button>
+        </ModalFooter>
       </form>
-    </div>
+    </Modal>
   );
 }
 
@@ -247,95 +257,82 @@ export default function HomePage() {
         <title>Мои действия - Статус</title>
       </Head>
 
-      <div className="flex items-center justify-between mb-lg">
-        <div>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Мои действия</h2>
-          <p className="text-muted mt-sm" style={{ fontSize: '0.875rem' }}>
-            {new Date().toLocaleDateString('ru-RU', {
-              weekday: 'long',
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-            })}
-          </p>
-        </div>
-        <div className="card" style={{ padding: 'var(--spacing-md)', textAlign: 'right' }}>
-          <p className="text-muted" style={{ fontSize: '0.75rem' }}>
-            Баллов за сегодня
-          </p>
-          <p style={{ fontSize: '1.5rem', fontWeight: 700, lineHeight: 1.2 }}>
-            {formatWeight(todayTotal)}
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        title="Мои действия"
+        subtitle={
+          new Date().toLocaleDateString('ru-RU', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          })
+        }
+        actions={
+          <Card padding="md" className="text-right">
+            <p className={`text-muted ${styles.statLabel}`}>Баллов за сегодня</p>
+            <p className={styles.statValue}>{formatWeight(todayTotal)}</p>
+          </Card>
+        }
+      />
 
-      <div className="card">
-        <div className="card-body">
-          {error && <div className="alert alert-error">{error}</div>}
-          {success && <div className="alert alert-success">{success}</div>}
+      <Card>
+        <CardBody>
+          {error && <Alert variant="error">{error}</Alert>}
+          {success && <Alert variant="success">{success}</Alert>}
 
           {isLoading ? (
-            <p className="text-muted text-center" style={{ padding: '2rem' }}>
-              Загрузка...
-            </p>
+            <p className={`text-muted text-center ${styles.emptyState}`}>Загрузка...</p>
           ) : parameters.length === 0 ? (
-            <p className="text-muted text-center" style={{ padding: '2rem' }}>
+            <p className={`text-muted text-center ${styles.emptyState}`}>
               Активные параметры не найдены. Обратитесь к руководителю.
             </p>
           ) : (
-            <div className="table-wrapper">
-            <table className="table">
+            <Table>
               <thead>
                 <tr>
-                  <th>Действие</th>
-                  <th>Вес</th>
-                  <th style={{ textAlign: 'center' }}>Сегодня</th>
-                  <th style={{ textAlign: 'right' }}>Действия</th>
+                  <Th>Действие</Th>
+                  <Th>Вес</Th>
+                  <Th align="center">Сегодня</Th>
+                  <Th align="right">Действия</Th>
                 </tr>
               </thead>
               <tbody>
                 {parameters.map((p) => (
                   <tr key={p.id}>
-                    <td>
+                    <Td>
                       <div>
                         <strong>{p.name}</strong>
                       </div>
                       {p.description && (
-                        <div className="text-muted" style={{ fontSize: '0.75rem' }}>
-                          {p.description}
-                        </div>
+                        <div className={`text-muted ${styles.description}`}>{p.description}</div>
                       )}
-                    </td>
-                    <td>{formatWeight(p.weight)}</td>
-                    <td style={{ textAlign: 'center', fontWeight: 600 }}>
+                    </Td>
+                    <Td>{formatWeight(p.weight)}</Td>
+                    <Td align="center" semibold>
                       {quantityByParameter.get(p.id) ?? 0}
-                    </td>
-                    <td style={{ textAlign: 'right' }}>
-                      <div className="flex justify-between gap-sm" style={{ justifyContent: 'flex-end' }}>
-                        <button
-                          className="btn btn-primary btn-sm"
-                          onClick={() => handleQuickAdd(p)}
-                          disabled={isSaving}
-                        >
+                    </Td>
+                    <Td align="right">
+                      <div className={styles.actions}>
+                        <Button size="sm" onClick={() => handleQuickAdd(p)} disabled={isSaving}>
                           +1
-                        </button>
-                        <button
-                          className="btn btn-outline btn-sm"
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
                           onClick={() => setModal({ type: 'create', parameter: p })}
                           disabled={isSaving}
                         >
                           Добавить
-                        </button>
+                        </Button>
                       </div>
-                    </td>
+                    </Td>
                   </tr>
                 ))}
               </tbody>
-            </table>
-            </div>
+            </Table>
           )}
-        </div>
-      </div>
+        </CardBody>
+      </Card>
 
       {modal.type === 'create' && (
         <EntryFormModal

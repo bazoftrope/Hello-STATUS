@@ -2,6 +2,8 @@ import { ReactNode, useState } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import { Button, ThemeToggle } from '@/components/ui';
+import styles from './Layout.module.css';
 
 interface LayoutProps {
   children: ReactNode;
@@ -21,9 +23,9 @@ export function Layout({ children }: LayoutProps) {
 
   if (status === 'loading') {
     return (
-      <div className="page">
-        <div className="page-content">
-          <div className="container text-center">
+      <div className={styles.page}>
+        <div className={styles.pageContent}>
+          <div className={`${styles.container} text-center`}>
             <p>Загрузка...</p>
           </div>
         </div>
@@ -32,51 +34,49 @@ export function Layout({ children }: LayoutProps) {
   }
 
   return (
-    <div className="page">
-      <header className="page-header">
-        <div className="container">
-          <div className="header-top">
-            <Link href="/" style={{ textDecoration: 'none' }}>
-              <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--color-text)' }}>
-                Статус
-              </h1>
+    <div className={styles.page}>
+      <header className={styles.pageHeader}>
+        <div className={styles.container}>
+          <div className={styles.headerTop}>
+            <Link href="/" className={styles.brandLink}>
+              <h1 className={styles.brandTitle}>Статус</h1>
             </Link>
 
             {session && (
               <>
                 <button
-                  className="hamburger"
+                  className={styles.hamburger}
                   onClick={() => setMenuOpen(!menuOpen)}
                   aria-label="Меню"
                 >
                   {menuOpen ? '✕' : '☰'}
                 </button>
 
-                <nav className={`nav-links ${menuOpen ? 'nav-open' : ''}`}>
+                <nav className={`${styles.navLinks}${menuOpen ? ` ${styles.open}` : ''}`}>
                   <Link
                     href="/"
-                    className={router.pathname === '/' ? 'active' : ''}
+                    className={router.pathname === '/' ? styles.active : ''}
                     onClick={closeMenu}
                   >
                     Мои действия
                   </Link>
                   <Link
                     href="/history"
-                    className={router.pathname === '/history' ? 'active' : ''}
+                    className={router.pathname === '/history' ? styles.active : ''}
                     onClick={closeMenu}
                   >
                     История
                   </Link>
                   <Link
                     href="/rating"
-                    className={router.pathname === '/rating' ? 'active' : ''}
+                    className={router.pathname === '/rating' ? styles.active : ''}
                     onClick={closeMenu}
                   >
                     Рейтинг
                   </Link>
                   <Link
                     href="/stats"
-                    className={router.pathname === '/stats' ? 'active' : ''}
+                    className={router.pathname === '/stats' ? styles.active : ''}
                     onClick={closeMenu}
                   >
                     Статистика
@@ -85,22 +85,29 @@ export function Layout({ children }: LayoutProps) {
                   {session.user.role === 'manager' && (
                     <>
                       <Link
+                        href="/admin/employees"
+                        className={router.pathname === '/admin/employees' ? styles.active : ''}
+                        onClick={closeMenu}
+                      >
+                        Сотрудники
+                      </Link>
+                      <Link
                         href="/admin/parameters"
-                        className={router.pathname === '/admin/parameters' ? 'active' : ''}
+                        className={router.pathname === '/admin/parameters' ? styles.active : ''}
                         onClick={closeMenu}
                       >
                         Параметры
                       </Link>
                       <Link
                         href="/admin/entries"
-                        className={router.pathname === '/admin/entries' ? 'active' : ''}
+                        className={router.pathname === '/admin/entries' ? styles.active : ''}
                         onClick={closeMenu}
                       >
                         Журнал
                       </Link>
                       <Link
                         href="/admin/audit"
-                        className={router.pathname === '/admin/audit' ? 'active' : ''}
+                        className={router.pathname === '/admin/audit' ? styles.active : ''}
                         onClick={closeMenu}
                       >
                         Аудит
@@ -108,11 +115,12 @@ export function Layout({ children }: LayoutProps) {
                     </>
                   )}
 
-                  <div className="nav-user">
+                  <div className={styles.navUser}>
+                    <ThemeToggle />
                     <span className="text-muted">{session.user.name}</span>
-                    <button onClick={handleSignOut} className="btn btn-outline btn-sm">
+                    <Button variant="outline" size="sm" onClick={handleSignOut}>
                       Выйти
-                    </button>
+                    </Button>
                   </div>
                 </nav>
               </>
@@ -121,8 +129,8 @@ export function Layout({ children }: LayoutProps) {
         </div>
       </header>
 
-      <main className="page-content">
-        <div className="container">{children}</div>
+      <main className={styles.pageContent}>
+        <div className={styles.container}>{children}</div>
       </main>
     </div>
   );

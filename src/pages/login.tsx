@@ -1,11 +1,24 @@
 import { useState } from 'react';
+import Link from 'next/link';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
+import {
+  Alert,
+  Button,
+  Card,
+  CardBody,
+  CardHeader,
+  CenterPage,
+  FormGroup,
+  FormInput,
+  FormLabel,
+} from '@/components/ui';
+import styles from './login.module.css';
 
 export default function LoginPage() {
   const router = useRouter();
-  
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -42,83 +55,68 @@ export default function LoginPage() {
         <title>Вход - Статус</title>
       </Head>
 
-      <div
-        style={{
-          minHeight: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: 'var(--color-background)',
-        }}
-      >
-        <div className="card" style={{ width: '100%', maxWidth: '400px' }}>
-          <div className="card-header" style={{ textAlign: 'center' }}>
-            <h1 style={{ fontSize: '1.5rem', fontWeight: 700 }}>Вход в систему</h1>
-            <p className="text-muted" style={{ marginTop: '0.5rem' }}>
+      <CenterPage>
+        <Card className={styles.loginCard}>
+          <CardHeader className="text-center">
+            <h1 className={styles.loginTitle}>Вход в систему</h1>
+            <p className={`text-muted ${styles.loginSubtitle}`}>
               Статус — Рейтинг продуктивности
             </p>
-          </div>
+          </CardHeader>
 
-          <div className="card-body">
+          <CardBody>
             <form onSubmit={handleSubmit}>
-              {error && <div className="alert alert-error">{error}</div>}
+              {error && <Alert variant="error">{error}</Alert>}
 
-              <div className="form-group">
-                <label htmlFor="email" className="form-label">
-                  Email
-                </label>
-                <input
+              <FormGroup>
+                <FormLabel htmlFor="email">Email</FormLabel>
+                <FormInput
                   id="email"
                   type="email"
-                  className="form-input"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="user@status.app"
                   required
                   disabled={isLoading}
                 />
-              </div>
+              </FormGroup>
 
-              <div className="form-group">
-                <label htmlFor="password" className="form-label">
-                  Пароль
-                </label>
-                <input
+              <FormGroup>
+                <FormLabel htmlFor="password">Пароль</FormLabel>
+                <FormInput
                   id="password"
                   type="password"
-                  className="form-input"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Введите пароль"
                   required
                   disabled={isLoading}
                 />
-              </div>
+              </FormGroup>
 
-              <button
-                type="submit"
-                className="btn btn-primary"
-                style={{ width: '100%' }}
-                disabled={isLoading}
-              >
+              <Button type="submit" block disabled={isLoading}>
                 {isLoading ? 'Вход...' : 'Войти'}
-              </button>
+              </Button>
             </form>
 
-            <div style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid var(--color-border)' }}>
-              <p className="text-muted" style={{ fontSize: '0.875rem', textAlign: 'center' }}>
-                Тестовые аккаунты:
-              </p>
-              <p className="text-muted" style={{ fontSize: '0.75rem', textAlign: 'center', marginTop: '0.25rem' }}>
+            <div className={styles.divider}>
+              <p className={`text-muted ${styles.hintText}`}>Тестовые аккаунты:</p>
+              <p className={`text-muted ${styles.hintSmall}`}>
                 Руководитель: manager@status.app / manager123
               </p>
-              <p className="text-muted" style={{ fontSize: '0.75rem', textAlign: 'center' }}>
+              <p className={`text-muted ${styles.hintSmall}`}>
                 Сотрудник: employee@status.app / employee123
               </p>
+              <p className={`text-muted ${styles.hintText}`}>
+                Нет аккаунта?{' '}
+                <Link href="/register" className={styles.registerLink}>
+                  Зарегистрироваться
+                </Link>
+              </p>
             </div>
-          </div>
-        </div>
-      </div>
+          </CardBody>
+        </Card>
+      </CenterPage>
     </>
   );
 }

@@ -1,0 +1,26 @@
+.modalTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.parameterHint {
+  font-size: 0.875rem;
+}
+
+.parameterHint strong {
+  color: var(--color-text);
+}
+
+.emptyState {
+  padding: 2rem;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-sm);
+}
+
+.filterLabel {
+  margin-bottom: 0.25rem;
+}

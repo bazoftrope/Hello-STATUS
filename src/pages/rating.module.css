@@ -1,0 +1,7 @@
+.emptyState {
+  padding: 2rem;
+}
+
+.filterWrap {
+  flex-wrap: wrap;
+}

@@ -1,6 +1,26 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Head from 'next/head';
 import { Layout } from '@/components/Layout';
+import {
+  Alert,
+  Badge,
+  Button,
+  Card,
+  CardBody,
+  FormGroup,
+  FormInput,
+  FormLabel,
+  FormTextarea,
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
+  PageHeader,
+  Table,
+  Td,
+  Th,
+} from '@/components/ui';
+import styles from './parameters.module.css';
 
 interface Parameter {
   id: string;
@@ -46,25 +66,22 @@ function ParameterFormModal({ title, initial, isSaving, onSubmit, onClose }: Par
   };
 
   return (
-    <div className="modal-overlay">
-      <form className="modal" onSubmit={handleSubmit}>
-        <div className="modal-header">
-          <h3 style={{ fontSize: '1.125rem', fontWeight: 600 }}>{title}</h3>
-          <button type="button" className="btn btn-outline btn-sm" onClick={onClose} disabled={isSaving}>
+    <Modal onClose={onClose}>
+      <form onSubmit={handleSubmit}>
+        <ModalHeader>
+          <h3 className={styles.modalTitle}>{title}</h3>
+          <Button type="button" variant="outline" size="sm" onClick={onClose} disabled={isSaving}>
             Закрыть
-          </button>
-        </div>
+          </Button>
+        </ModalHeader>
 
-        <div className="modal-body">
-          {error && <div className="alert alert-error">{error}</div>}
+        <ModalBody>
+          {error && <Alert variant="error">{error}</Alert>}
 
-          <div className="form-group">
-            <label className="form-label" htmlFor="param-name">
-              Название
-            </label>
-            <input
+          <FormGroup>
+            <FormLabel htmlFor="param-name">Название</FormLabel>
+            <FormInput
               id="param-name"
-              className="form-input"
               value={name}
               onChange={(e) => setName(e.target.value)}
               maxLength={255}
@@ -72,30 +89,24 @@ function ParameterFormModal({ title, initial, isSaving, onSubmit, onClose }: Par
               required
               disabled={isSaving}
             />
-          </div>
+          </FormGroup>
 
-          <div className="form-group">
-            <label className="form-label" htmlFor="param-description">
-              Описание
-            </label>
-            <textarea
+          <FormGroup>
+            <FormLabel htmlFor="param-description">Описание</FormLabel>
+            <FormTextarea
               id="param-description"
-              className="form-input"
               rows={3}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Необязательно"
               disabled={isSaving}
             />
-          </div>
+          </FormGroup>
 
-          <div className="form-group">
-            <label className="form-label" htmlFor="param-weight">
-              Вес
-            </label>
-            <input
+          <FormGroup>
+            <FormLabel htmlFor="param-weight">Вес</FormLabel>
+            <FormInput
               id="param-weight"
-              className="form-input"
               type="number"
               step="0.1"
               min="0.01"
@@ -105,22 +116,22 @@ function ParameterFormModal({ title, initial, isSaving, onSubmit, onClose }: Par
               required
               disabled={isSaving}
             />
-            <p className="text-muted mt-sm" style={{ fontSize: '0.75rem' }}>
+            <p className={`text-muted mt-sm ${styles.hint}`}>
               Баллы = вес × количество. Изменение веса не влияет на уже начисленные баллы.
             </p>
-          </div>
-        </div>
+          </FormGroup>
+        </ModalBody>
 
-        <div className="modal-footer">
-          <button type="button" className="btn btn-outline" onClick={onClose} disabled={isSaving}>
+        <ModalFooter>
+          <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>
             Отмена
-          </button>
-          <button type="submit" className="btn btn-primary" disabled={isSaving}>
+          </Button>
+          <Button type="submit" disabled={isSaving}>
             {isSaving ? 'Сохранение...' : 'Сохранить'}
-          </button>
-        </div>
+          </Button>
+        </ModalFooter>
       </form>
-    </div>
+    </Modal>
   );
 }
 
@@ -240,82 +251,75 @@ export default function ParametersPage() {
         <title>Параметры - Статус</title>
       </Head>
 
-      <div className="flex items-center justify-between mb-lg">
-        <div>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Параметры отдела</h2>
-          <p className="text-muted mt-sm" style={{ fontSize: '0.875rem' }}>
-            Активных: {activeCount} · В архиве: {archivedCount}
-          </p>
-        </div>
-        <button className="btn btn-primary" onClick={() => setModal({ type: 'create' })}>
-          Добавить параметр
-        </button>
-      </div>
+      <PageHeader
+        title="Параметры отдела"
+        subtitle={`Активных: ${activeCount} · В архиве: ${archivedCount}`}
+        actions={
+          <Button onClick={() => setModal({ type: 'create' })}>Добавить параметр</Button>
+        }
+      />
 
-      <div className="card">
-        <div className="card-body">
-          {error && <div className="alert alert-error">{error}</div>}
+      <Card>
+        <CardBody>
+          {error && <Alert variant="error">{error}</Alert>}
 
           {isLoading ? (
-            <p className="text-muted text-center" style={{ padding: '2rem' }}>
-              Загрузка...
-            </p>
+            <p className={`text-muted text-center ${styles.emptyState}`}>Загрузка...</p>
           ) : sortedParameters.length === 0 ? (
-            <p className="text-muted text-center" style={{ padding: '2rem' }}>
+            <p className={`text-muted text-center ${styles.emptyState}`}>
               Параметры не найдены. Добавьте первый параметр.
             </p>
           ) : (
-            <div className="table-wrapper">
-            <table className="table">
+            <Table>
               <thead>
                 <tr>
-                  <th>Название</th>
-                  <th>Описание</th>
-                  <th>Вес</th>
-                  <th>Статус</th>
-                  <th>Действия</th>
+                  <Th>Название</Th>
+                  <Th>Описание</Th>
+                  <Th>Вес</Th>
+                  <Th>Статус</Th>
+                  <Th>Действия</Th>
                 </tr>
               </thead>
               <tbody>
                 {sortedParameters.map((p) => (
                   <tr key={p.id}>
-                    <td>{p.name}</td>
-                    <td className="text-muted">{p.description ?? '—'}</td>
-                    <td>{formatWeight(p.weight)}</td>
-                    <td>
+                    <Td>{p.name}</Td>
+                    <Td className="text-muted">{p.description ?? '—'}</Td>
+                    <Td>{formatWeight(p.weight)}</Td>
+                    <Td>
                       {p.isArchived ? (
-                        <span className="badge badge-archived">Архив</span>
+                        <Badge variant="archived">Архив</Badge>
                       ) : (
-                        <span className="badge badge-active">Активен</span>
+                        <Badge variant="active">Активен</Badge>
                       )}
-                    </td>
-                    <td>
+                    </Td>
+                    <Td>
                       <div className="flex gap-sm">
-                        <button
-                          className="btn btn-outline btn-sm"
+                        <Button
+                          variant="outline"
+                          size="sm"
                           onClick={() => setModal({ type: 'edit', parameter: p })}
                         >
                           Изменить
-                        </button>
+                        </Button>
                         {p.isArchived ? (
-                          <button className="btn btn-outline btn-sm" onClick={() => handleRestore(p)}>
+                          <Button variant="outline" size="sm" onClick={() => handleRestore(p)}>
                             Восстановить
-                          </button>
+                          </Button>
                         ) : (
-                          <button className="btn btn-outline btn-sm" onClick={() => handleArchive(p)}>
+                          <Button variant="outline" size="sm" onClick={() => handleArchive(p)}>
                             Архивировать
-                          </button>
+                          </Button>
                         )}
                       </div>
-                    </td>
+                    </Td>
                   </tr>
                 ))}
               </tbody>
-            </table>
-            </div>
+            </Table>
           )}
-        </div>
-      </div>
+        </CardBody>
+      </Card>
 
       {modal.type === 'create' && (
         <ParameterFormModal

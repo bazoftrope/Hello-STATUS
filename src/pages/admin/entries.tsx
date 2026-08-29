@@ -1,7 +1,26 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Head from 'next/head';
 import { Layout } from '@/components/Layout';
+import {
+  Alert,
+  Button,
+  Card,
+  CardBody,
+  FormGroup,
+  FormInput,
+  FormLabel,
+  FormTextarea,
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
+  PageHeader,
+  Table,
+  Td,
+  Th,
+} from '@/components/ui';
 import { monthStartISO, todayISO } from '@/lib/dates';
+import styles from './entries.module.css';
 
 interface Entry {
   id: string;
@@ -49,38 +68,28 @@ function EditFormModal({
   };
 
   return (
-    <div className="modal-overlay">
-      <form className="modal" onSubmit={handleSubmit}>
-        <div className="modal-header">
-          <h3 style={{ fontSize: '1.125rem', fontWeight: 600 }}>
-            Корректировка записи
-          </h3>
-          <button
-            type="button"
-            className="btn btn-outline btn-sm"
-            onClick={onClose}
-            disabled={isSaving}
-          >
+    <Modal onClose={onClose}>
+      <form onSubmit={handleSubmit}>
+        <ModalHeader>
+          <h3 className={styles.modalTitle}>Корректировка записи</h3>
+          <Button type="button" variant="outline" size="sm" onClick={onClose} disabled={isSaving}>
             Закрыть
-          </button>
-        </div>
+          </Button>
+        </ModalHeader>
 
-        <div className="modal-body">
-          {error && <div className="alert alert-error">{error}</div>}
+        <ModalBody>
+          {error && <Alert variant="error">{error}</Alert>}
 
-          <p className="text-muted mb-md" style={{ fontSize: '0.875rem' }}>
-            Сотрудник: <strong style={{ color: 'var(--color-text)' }}>{entry.userName}</strong>
+          <p className={`text-muted mb-md ${styles.parameterHint}`}>
+            Сотрудник: <strong>{entry.userName}</strong>
             <br />
-            Параметр: <strong style={{ color: 'var(--color-text)' }}>{entry.parameterName}</strong>
+            Параметр: <strong>{entry.parameterName}</strong>
           </p>
 
-          <div className="form-group">
-            <label className="form-label" htmlFor="admin-edit-quantity">
-              Количество
-            </label>
-            <input
+          <FormGroup>
+            <FormLabel htmlFor="admin-edit-quantity">Количество</FormLabel>
+            <FormInput
               id="admin-edit-quantity"
-              className="form-input"
               type="number"
               min={1}
               max={100000}
@@ -90,15 +99,12 @@ function EditFormModal({
               required
               disabled={isSaving}
             />
-          </div>
+          </FormGroup>
 
-          <div className="form-group">
-            <label className="form-label" htmlFor="admin-edit-date">
-              Дата
-            </label>
-            <input
+          <FormGroup>
+            <FormLabel htmlFor="admin-edit-date">Дата</FormLabel>
+            <FormInput
               id="admin-edit-date"
-              className="form-input"
               type="date"
               max={todayISO()}
               value={entryDate}
@@ -106,43 +112,31 @@ function EditFormModal({
               required
               disabled={isSaving}
             />
-          </div>
+          </FormGroup>
 
-          <div className="form-group">
-            <label className="form-label" htmlFor="admin-edit-comment">
-              Комментарий
-            </label>
-            <textarea
+          <FormGroup>
+            <FormLabel htmlFor="admin-edit-comment">Комментарий</FormLabel>
+            <FormTextarea
               id="admin-edit-comment"
-              className="form-input"
               rows={3}
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               placeholder="Необязательно"
               disabled={isSaving}
             />
-          </div>
-        </div>
+          </FormGroup>
+        </ModalBody>
 
-        <div className="modal-footer">
-          <button
-            type="button"
-            className="btn btn-outline"
-            onClick={onClose}
-            disabled={isSaving}
-          >
+        <ModalFooter>
+          <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>
             Отмена
-          </button>
-          <button
-            type="submit"
-            className="btn btn-primary"
-            disabled={isSaving}
-          >
+          </Button>
+          <Button type="submit" disabled={isSaving}>
             {isSaving ? 'Сохранение...' : 'Сохранить'}
-          </button>
-        </div>
+          </Button>
+        </ModalFooter>
       </form>
-    </div>
+    </Modal>
   );
 }
 
@@ -239,108 +233,102 @@ export default function AdminEntriesPage() {
         <title>Журнал записей - Статус</title>
       </Head>
 
-      <div className="flex items-center justify-between mb-lg">
-        <div>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Журнал записей</h2>
-          <p className="text-muted mt-sm" style={{ fontSize: '0.875rem' }}>
-            Записей: {entries.length} | Баллов: {formatWeight(totalPoints)}
-          </p>
-        </div>
-        <div className="card" style={{ padding: 'var(--spacing-md)' }}>
-          <div className="flex items-center gap-sm">
-            <div>
-              <label className="form-label" htmlFor="admin-from" style={{ marginBottom: '0.25rem' }}>
-                С
-              </label>
-              <input
-                id="admin-from"
-                className="form-input"
-                type="date"
-                value={from}
-                max={to}
-                onChange={(e) => setFrom(e.target.value)}
-              />
+      <PageHeader
+        title="Журнал записей"
+        subtitle={`Записей: ${entries.length} | Баллов: ${formatWeight(totalPoints)}`}
+        actions={
+          <Card padding="md">
+            <div className="flex items-center gap-sm">
+              <div>
+                <FormLabel htmlFor="admin-from" className={styles.filterLabel}>
+                  С
+                </FormLabel>
+                <FormInput
+                  id="admin-from"
+                  type="date"
+                  value={from}
+                  max={to}
+                  onChange={(e) => setFrom(e.target.value)}
+                />
+              </div>
+              <div>
+                <FormLabel htmlFor="admin-to" className={styles.filterLabel}>
+                  По
+                </FormLabel>
+                <FormInput
+                  id="admin-to"
+                  type="date"
+                  value={to}
+                  min={from}
+                  max={todayISO()}
+                  onChange={(e) => setTo(e.target.value)}
+                />
+              </div>
             </div>
-            <div>
-              <label className="form-label" htmlFor="admin-to" style={{ marginBottom: '0.25rem' }}>
-                По
-              </label>
-              <input
-                id="admin-to"
-                className="form-input"
-                type="date"
-                value={to}
-                min={from}
-                max={todayISO()}
-                onChange={(e) => setTo(e.target.value)}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
+          </Card>
+        }
+      />
 
-      <div className="card">
-        <div className="card-body">
-          {error && <div className="alert alert-error">{error}</div>}
-          {success && <div className="alert alert-success">{success}</div>}
+      <Card>
+        <CardBody>
+          {error && <Alert variant="error">{error}</Alert>}
+          {success && <Alert variant="success">{success}</Alert>}
 
           {isLoading ? (
-            <p className="text-muted text-center" style={{ padding: '2rem' }}>
-              Загрузка...
-            </p>
+            <p className={`text-muted text-center ${styles.emptyState}`}>Загрузка...</p>
           ) : entries.length === 0 ? (
-            <p className="text-muted text-center" style={{ padding: '2rem' }}>
+            <p className={`text-muted text-center ${styles.emptyState}`}>
               Записей за выбранный период нет.
             </p>
           ) : (
-            <div className="table-wrapper">
-            <table className="table">
+            <Table>
               <thead>
                 <tr>
-                  <th>Дата</th>
-                  <th>Сотрудник</th>
-                  <th>Параметр</th>
-                  <th style={{ textAlign: 'center' }}>Кол-во</th>
-                  <th style={{ textAlign: 'right' }}>Баллы</th>
-                  <th>Комментарий</th>
-                  <th style={{ textAlign: 'right' }}>Действия</th>
+                  <Th>Дата</Th>
+                  <Th>Сотрудник</Th>
+                  <Th>Параметр</Th>
+                  <Th align="center">Кол-во</Th>
+                  <Th align="right">Баллы</Th>
+                  <Th>Комментарий</Th>
+                  <Th align="right">Действия</Th>
                 </tr>
               </thead>
               <tbody>
                 {entries.map((entry) => (
                   <tr key={entry.id}>
-                    <td style={{ whiteSpace: 'nowrap' }}>{entry.entryDate}</td>
-                    <td>{entry.userName}</td>
-                    <td>{entry.parameterName}</td>
-                    <td style={{ textAlign: 'center' }}>{entry.quantity}</td>
-                    <td style={{ textAlign: 'right', fontWeight: 600 }}>
+                    <Td nowrap>{entry.entryDate}</Td>
+                    <Td>{entry.userName}</Td>
+                    <Td>{entry.parameterName}</Td>
+                    <Td align="center">{entry.quantity}</Td>
+                    <Td align="right" semibold>
                       {formatWeight(entry.points)}
-                    </td>
-                    <td className="text-muted">{entry.comment ?? '—'}</td>
-                    <td style={{ textAlign: 'right' }}>
-                      <div className="flex gap-sm" style={{ justifyContent: 'flex-end' }}>
-                        <button
-                          className="btn btn-outline btn-sm"
+                    </Td>
+                    <Td className="text-muted">{entry.comment ?? '—'}</Td>
+                    <Td align="right">
+                      <div className={styles.actions}>
+                        <Button
+                          variant="outline"
+                          size="sm"
                           onClick={() => setModal({ type: 'edit', entry })}
                         >
                           Изменить
-                        </button>
-                        <button
-                          className="btn btn-danger btn-sm"
+                        </Button>
+                        <Button
+                          variant="danger"
+                          size="sm"
                           onClick={() => handleDelete(entry)}
                         >
                           Удалить
-                        </button>
+                        </Button>
                       </div>
-                    </td>
+                    </Td>
                   </tr>
                 ))}
               </tbody>
-            </table>
-            </div>
+            </Table>
           )}
-        </div>
-      </div>
+        </CardBody>
+      </Card>
 
       {modal.type === 'edit' && (
         <EditFormModal

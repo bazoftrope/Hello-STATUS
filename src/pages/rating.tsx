@@ -2,6 +2,17 @@ import { useCallback, useEffect, useState } from 'react';
 import Head from 'next/head';
 import { Layout } from '@/components/Layout';
 import {
+  Alert,
+  Button,
+  Card,
+  CardBody,
+  FormInput,
+  PageHeader,
+  Table,
+  Td,
+  Th,
+} from '@/components/ui';
+import {
   addDaysISO,
   monthStartISO,
   quarterStartISO,
@@ -9,6 +20,7 @@ import {
   weekStartISO,
   yearStartISO,
 } from '@/lib/dates';
+import styles from './rating.module.css';
 
 interface RatingRow {
   userId: string;
@@ -93,91 +105,86 @@ export default function RatingPage() {
         <title>Рейтинг - Статус</title>
       </Head>
 
-      <div className="flex items-center justify-between mb-lg">
-        <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Рейтинг отдела</h2>
-      </div>
+      <PageHeader title="Рейтинг отдела" />
 
-      <div className="card mb-lg" style={{ padding: 'var(--spacing-md)' }}>
-        <div className="flex items-center gap-sm" style={{ flexWrap: 'wrap' }}>
+      <Card padding="md" className="mb-lg">
+        <div className={`flex items-center gap-sm ${styles.filterWrap}`}>
           {(Object.keys(PERIOD_LABELS) as PeriodKey[]).map((key) => (
-            <button
+            <Button
               key={key}
-              className={`btn btn-sm ${period === key ? 'btn-primary' : 'btn-outline'}`}
+              size="sm"
+              variant={period === key ? 'primary' : 'outline'}
               onClick={() => setPeriod(key)}
             >
               {PERIOD_LABELS[key]}
-            </button>
+            </Button>
           ))}
 
           {period === 'custom' && (
             <>
-              <input
-                className="form-input"
+              <FormInput
+                autoWidth
                 type="date"
                 value={customFrom}
                 max={customTo}
                 onChange={(e) => setCustomFrom(e.target.value)}
-                style={{ width: 'auto' }}
               />
               <span className="text-muted">—</span>
-              <input
-                className="form-input"
+              <FormInput
+                autoWidth
                 type="date"
                 value={customTo}
                 min={customFrom}
                 max={todayISO()}
                 onChange={(e) => setCustomTo(e.target.value)}
-                style={{ width: 'auto' }}
               />
             </>
           )}
         </div>
-      </div>
+      </Card>
 
-      <div className="card">
-        <div className="card-body">
-          {error && <div className="alert alert-error">{error}</div>}
+      <Card>
+        <CardBody>
+          {error && <Alert variant="error">{error}</Alert>}
 
           {isLoading ? (
-            <p className="text-muted text-center" style={{ padding: '2rem' }}>
-              Загрузка...
-            </p>
+            <p className={`text-muted text-center ${styles.emptyState}`}>Загрузка...</p>
           ) : data.length === 0 ? (
-            <p className="text-muted text-center" style={{ padding: '2rem' }}>
+            <p className={`text-muted text-center ${styles.emptyState}`}>
               Нет данных за выбранный период.
             </p>
           ) : (
-            <div className="table-wrapper">
-            <table className="table">
+            <Table>
               <thead>
                 <tr>
-                  <th style={{ width: '3rem', textAlign: 'center' }}>#</th>
-                  <th>Сотрудник</th>
-                  <th style={{ textAlign: 'center' }}>Записей</th>
-                  <th style={{ textAlign: 'right' }}>Баллы</th>
+                  <Th align="center" style={{ width: '3rem' }}>
+                    #
+                  </Th>
+                  <Th>Сотрудник</Th>
+                  <Th align="center">Записей</Th>
+                  <Th align="right">Баллы</Th>
                 </tr>
               </thead>
               <tbody>
                 {data.map((row, index) => (
                   <tr key={row.userId}>
-                    <td style={{ textAlign: 'center', fontWeight: 600 }}>
+                    <Td align="center" semibold>
                       {index + 1}
-                    </td>
-                    <td>
+                    </Td>
+                    <Td>
                       <strong>{row.userName}</strong>
-                    </td>
-                    <td style={{ textAlign: 'center' }}>{row.entryCount}</td>
-                    <td style={{ textAlign: 'right', fontWeight: 700 }}>
+                    </Td>
+                    <Td align="center">{row.entryCount}</Td>
+                    <Td align="right" bold>
                       {formatWeight(row.totalPoints)}
-                    </td>
+                    </Td>
                   </tr>
                 ))}
               </tbody>
-            </table>
-            </div>
+            </Table>
           )}
-        </div>
-      </div>
+        </CardBody>
+      </Card>
     </Layout>
   );
 }

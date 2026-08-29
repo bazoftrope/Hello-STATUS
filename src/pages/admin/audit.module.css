@@ -1,0 +1,24 @@
+.emptyState {
+  padding: 2rem;
+}
+
+.filterLabel {
+  margin-bottom: 0.25rem;
+}
+
+.diff {
+  font-size: 0.8125rem;
+}
+
+.diffRow {
+  margin-bottom: 2px;
+}
+
+.oldValue {
+  color: var(--color-danger);
+  text-decoration: line-through;
+}
+
+.newValue {
+  color: var(--color-success);
+}

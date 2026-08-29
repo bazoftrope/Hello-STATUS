@@ -1,7 +1,20 @@
 import { useCallback, useEffect, useState } from 'react';
 import Head from 'next/head';
 import { Layout } from '@/components/Layout';
+import {
+  Alert,
+  Badge,
+  Card,
+  CardBody,
+  FormInput,
+  FormLabel,
+  PageHeader,
+  Table,
+  Td,
+  Th,
+} from '@/components/ui';
 import { monthStartISO, todayISO } from '@/lib/dates';
+import styles from './audit.module.css';
 
 interface AuditEntry {
   id: string;
@@ -32,8 +45,8 @@ function DiffView({
 }) {
   if (action === 'delete' && oldVal) {
     return (
-      <div style={{ fontSize: '0.8125rem' }}>
-        <span style={{ color: 'var(--color-danger)', textDecoration: 'line-through' }}>
+      <div className={styles.diff}>
+        <span className={styles.oldValue}>
           {formatValue(oldVal.quantity)} × {formatValue(oldVal.comment ?? '—')}
         </span>
       </div>
@@ -55,17 +68,13 @@ function DiffView({
   if (changes.length === 0) return <span className="text-muted">Без изменений</span>;
 
   return (
-    <div style={{ fontSize: '0.8125rem' }}>
+    <div className={styles.diff}>
       {changes.map((f) => (
-        <div key={f.key} style={{ marginBottom: '2px' }}>
+        <div key={f.key} className={styles.diffRow}>
           <span className="text-muted">{f.label}: </span>
-          <span style={{ color: 'var(--color-danger)', textDecoration: 'line-through' }}>
-            {formatValue(oldVal[f.key]) || '—'}
-          </span>
+          <span className={styles.oldValue}>{formatValue(oldVal[f.key]) || '—'}</span>
           {' → '}
-          <span style={{ color: 'var(--color-success)' }}>
-            {formatValue(newVal[f.key]) || '—'}
-          </span>
+          <span className={styles.newValue}>{formatValue(newVal[f.key]) || '—'}</span>
         </div>
       ))}
     </div>
@@ -106,108 +115,98 @@ export default function AuditPage() {
         <title>Аудит-лог - Статус</title>
       </Head>
 
-      <div className="flex items-center justify-between mb-lg">
-        <div>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Аудит-лог</h2>
-          <p className="text-muted mt-sm" style={{ fontSize: '0.875rem' }}>
-            Изменения записей руководителем
-          </p>
-        </div>
-        <div className="card" style={{ padding: 'var(--spacing-md)' }}>
-          <div className="flex items-center gap-sm">
-            <div>
-              <label className="form-label" htmlFor="audit-from" style={{ marginBottom: '0.25rem' }}>
-                С
-              </label>
-              <input
-                id="audit-from"
-                className="form-input"
-                type="date"
-                value={from}
-                max={to}
-                onChange={(e) => setFrom(e.target.value)}
-              />
+      <PageHeader
+        title="Аудит-лог"
+        subtitle="Изменения записей руководителем"
+        actions={
+          <Card padding="md">
+            <div className="flex items-center gap-sm">
+              <div>
+                <FormLabel htmlFor="audit-from" className={styles.filterLabel}>
+                  С
+                </FormLabel>
+                <FormInput
+                  id="audit-from"
+                  type="date"
+                  value={from}
+                  max={to}
+                  onChange={(e) => setFrom(e.target.value)}
+                />
+              </div>
+              <div>
+                <FormLabel htmlFor="audit-to" className={styles.filterLabel}>
+                  По
+                </FormLabel>
+                <FormInput
+                  id="audit-to"
+                  type="date"
+                  value={to}
+                  min={from}
+                  max={todayISO()}
+                  onChange={(e) => setTo(e.target.value)}
+                />
+              </div>
             </div>
-            <div>
-              <label className="form-label" htmlFor="audit-to" style={{ marginBottom: '0.25rem' }}>
-                По
-              </label>
-              <input
-                id="audit-to"
-                className="form-input"
-                type="date"
-                value={to}
-                min={from}
-                max={todayISO()}
-                onChange={(e) => setTo(e.target.value)}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
+          </Card>
+        }
+      />
 
-      <div className="card">
-        <div className="card-body">
-          {error && <div className="alert alert-error">{error}</div>}
+      <Card>
+        <CardBody>
+          {error && <Alert variant="error">{error}</Alert>}
 
           {isLoading ? (
-            <p className="text-muted text-center" style={{ padding: '2rem' }}>
-              Загрузка...
-            </p>
+            <p className={`text-muted text-center ${styles.emptyState}`}>Загрузка...</p>
           ) : entries.length === 0 ? (
-            <p className="text-muted text-center" style={{ padding: '2rem' }}>
+            <p className={`text-muted text-center ${styles.emptyState}`}>
               Изменений за выбранный период нет.
             </p>
           ) : (
-            <div className="table-wrapper">
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>Дата</th>
-                    <th>Кто изменил</th>
-                    <th>Сотрудник</th>
-                    <th>Параметр</th>
-                    <th>Действие</th>
-                    <th>Изменения</th>
+            <Table>
+              <thead>
+                <tr>
+                  <Th>Дата</Th>
+                  <Th>Кто изменил</Th>
+                  <Th>Сотрудник</Th>
+                  <Th>Параметр</Th>
+                  <Th>Действие</Th>
+                  <Th>Изменения</Th>
+                </tr>
+              </thead>
+              <tbody>
+                {entries.map((entry) => (
+                  <tr key={entry.id}>
+                    <Td nowrap>
+                      {new Date(entry.createdAt).toLocaleString('ru-RU', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </Td>
+                    <Td>{entry.actorName}</Td>
+                    <Td>{entry.entryAuthorName}</Td>
+                    <Td>{entry.parameterName}</Td>
+                    <Td>
+                      <Badge variant={entry.action === 'delete' ? 'archived' : 'active'}>
+                        {entry.action === 'delete' ? 'Удаление' : 'Изменение'}
+                      </Badge>
+                    </Td>
+                    <Td>
+                      <DiffView
+                        oldVal={entry.oldValue}
+                        newVal={entry.newValue}
+                        action={entry.action}
+                      />
+                    </Td>
                   </tr>
-                </thead>
-                <tbody>
-                  {entries.map((entry) => (
-                    <tr key={entry.id}>
-                      <td style={{ whiteSpace: 'nowrap' }}>
-                        {new Date(entry.createdAt).toLocaleString('ru-RU', {
-                          day: '2-digit',
-                          month: '2-digit',
-                          year: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
-                      </td>
-                      <td>{entry.actorName}</td>
-                      <td>{entry.entryAuthorName}</td>
-                      <td>{entry.parameterName}</td>
-                      <td>
-                        <span
-                          className={`badge ${entry.action === 'delete' ? 'badge-archived' : 'badge-active'}`}
-                        >
-                          {entry.action === 'delete' ? 'Удаление' : 'Изменение'}
-                        </span>
-                      </td>
-                      <td>
-                        <DiffView
-                          oldVal={entry.oldValue}
-                          newVal={entry.newValue}
-                          action={entry.action}
-                        />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                ))}
+              </tbody>
+            </Table>
           )}
-        </div>
-      </div>
+        </CardBody>
+      </Card>
     </Layout>
   );
 }

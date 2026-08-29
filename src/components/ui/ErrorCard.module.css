@@ -1,0 +1,22 @@
+.code {
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+.title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: var(--spacing-md) 0;
+}
+
+.message {
+  color: var(--color-text-muted);
+  margin-bottom: var(--spacing-lg);
+}
+
+.actions {
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-sm);
+}
