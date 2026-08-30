@@ -58,6 +58,7 @@ export default function LoginPage() {
       <CenterPage>
         <Card className={styles.loginCard}>
           <CardHeader className="text-center">
+            <img src="/icons/status.png" alt="Статус" className={styles.brandLogo} />
             <h1 className={styles.loginTitle}>Вход в систему</h1>
             <p className={`text-muted ${styles.loginSubtitle}`}>
               Статус — Рейтинг продуктивности

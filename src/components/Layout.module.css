@@ -29,7 +29,16 @@
 }
 
 .brandLink {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
   text-decoration: none;
+}
+
+.brandLogo {
+  height: 36px;
+  width: auto;
+  color: var(--color-text);
 }
 
 .brandTitle {

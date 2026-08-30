@@ -8,6 +8,13 @@
   font-weight: 700;
 }
 
+.brandLogo {
+  height: 40px;
+  width: auto;
+  margin-bottom: 0.75rem;
+  color: var(--color-text);
+}
+
 .registerSubtitle {
   margin-top: 0.5rem;
 }

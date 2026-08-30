@@ -1,7 +1,7 @@
 :root {
   /* Colors */
-  --color-primary: #3b82f6;
-  --color-primary-hover: #2563eb;
+  --color-primary: #008080;
+  --color-primary-hover:#2F4F4F;
   --color-primary-light: #dbeafe;
   --color-secondary: #6b7280;
   --color-secondary-hover: #4b5563;
@@ -61,8 +61,8 @@
 
 :root[data-theme='dark'] {
   /* Colors */
-  --color-primary: #3b82f6;
-  --color-primary-hover: #2563eb;
+  --color-primary: #5F9EA0;
+  --color-primary-hover:#B0E0E6;
   --color-primary-light: rgb(59 130 246 / 0.35);
   --color-secondary: #475569;
   --color-secondary-hover: #64748b;

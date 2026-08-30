@@ -39,7 +39,7 @@ export function Layout({ children }: LayoutProps) {
         <div className={styles.container}>
           <div className={styles.headerTop}>
             <Link href="/" className={styles.brandLink}>
-              <h1 className={styles.brandTitle}>Статус</h1>
+              <img src="/icons/status.png" alt="Статус" className={styles.brandLogo} />
             </Link>
 
             {session && (

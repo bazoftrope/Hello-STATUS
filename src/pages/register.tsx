@@ -86,6 +86,7 @@ export default function RegisterPage() {
       <CenterPage>
         <Card className={styles.registerCard}>
           <CardHeader className="text-center">
+            <img src="/icons/status.png" alt="Статус" className={styles.brandLogo} />
             <h1 className={styles.registerTitle}>Регистрация</h1>
             <p className={`text-muted ${styles.registerSubtitle}`}>
               Статус — Рейтинг продуктивности
