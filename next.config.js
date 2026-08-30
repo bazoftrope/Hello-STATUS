@@ -9,7 +9,6 @@ const withPWA = require('next-pwa')({
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
-  output: 'standalone',
 };
 
 module.exports = withPWA(nextConfig);
