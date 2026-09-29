@@ -23,6 +23,11 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
+# Docker sets HOSTNAME to the container ID, which makes next-server bind to the
+# container IP instead of all interfaces. The compose healthcheck hits localhost,
+# so it fails with "fetch failed" unless this is overridden.
+ENV HOSTNAME=0.0.0.0
+
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
