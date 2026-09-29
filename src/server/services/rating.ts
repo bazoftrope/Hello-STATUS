@@ -31,6 +31,7 @@ export async function getByDepartment(
       and(
         eq(users.departmentId, departmentId),
         eq(users.isActive, true),
+        eq(users.role, 'employee'),
         filters.from ? gte(entries.entryDate, filters.from) : undefined,
         filters.to ? lte(entries.entryDate, filters.to) : undefined
       )

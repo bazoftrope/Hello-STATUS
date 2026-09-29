@@ -168,7 +168,8 @@ function parseWeight(value: unknown): number | null {
     return value > 0 && value <= 1000 ? value : null;
   }
   if (typeof value === 'string' && value.trim() !== '') {
-    const parsed = Number(value);
+    const normalized = value.trim().replace(',', '.');
+    const parsed = Number(normalized);
     return Number.isFinite(parsed) && parsed > 0 && parsed <= 1000 ? parsed : null;
   }
   return null;

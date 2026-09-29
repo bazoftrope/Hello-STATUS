@@ -3,6 +3,7 @@ import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { Button, ThemeToggle } from '@/components/ui';
+import { StatusLogo } from './StatusLogo';
 import styles from './Layout.module.css';
 
 interface LayoutProps {
@@ -39,7 +40,7 @@ export function Layout({ children }: LayoutProps) {
         <div className={styles.container}>
           <div className={styles.headerTop}>
             <Link href="/" className={styles.brandLink}>
-              <img src="/icons/status.png" alt="Статус" className={styles.brandLogo} />
+              <StatusLogo className={styles.brandLogo} />
             </Link>
 
             {session && (
@@ -53,19 +54,21 @@ export function Layout({ children }: LayoutProps) {
                 </button>
 
                 <nav className={`${styles.navLinks}${menuOpen ? ` ${styles.open}` : ''}`}>
-                  <Link
-                    href="/"
-                    className={router.pathname === '/' ? styles.active : ''}
-                    onClick={closeMenu}
-                  >
-                    Мои действия
-                  </Link>
+                  {session.user.role !== 'manager' && (
+                    <Link
+                      href="/"
+                      className={router.pathname === '/' ? styles.active : ''}
+                      onClick={closeMenu}
+                    >
+                      Мои действия
+                    </Link>
+                  )}
                   <Link
                     href="/history"
                     className={router.pathname === '/history' ? styles.active : ''}
                     onClick={closeMenu}
                   >
-                    История
+                    {session.user.role === 'manager' ? 'История подразделения' : 'История'}
                   </Link>
                   <Link
                     href="/rating"

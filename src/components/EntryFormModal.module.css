@@ -1,0 +1,12 @@
+.modalTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.parameterHint {
+  font-size: 0.875rem;
+}
+
+.parameterHint strong {
+  color: var(--color-text);
+}

@@ -14,6 +14,7 @@ import {
   FormInput,
   FormLabel,
 } from '@/components/ui';
+import { StatusLogo } from '@/components/StatusLogo';
 import styles from './login.module.css';
 
 export default function LoginPage() {
@@ -58,7 +59,7 @@ export default function LoginPage() {
       <CenterPage>
         <Card className={styles.loginCard}>
           <CardHeader className="text-center">
-            <img src="/icons/status.png" alt="Статус" className={styles.brandLogo} />
+            <StatusLogo className={styles.brandLogo} />
             <h1 className={styles.loginTitle}>Вход в систему</h1>
             <p className={`text-muted ${styles.loginSubtitle}`}>
               Статус — Рейтинг продуктивности

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import Head from 'next/head';
+import { useSession } from 'next-auth/react';
 import { Layout } from '@/components/Layout';
 import {
   Alert,
@@ -66,6 +67,8 @@ function getPeriodDates(key: PeriodKey, customFrom: string, customTo: string) {
 }
 
 export default function RatingPage() {
+  const { data: session } = useSession();
+  const isManager = session?.user.role === 'manager';
   const [data, setData] = useState<RatingRow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -105,7 +108,10 @@ export default function RatingPage() {
         <title>Рейтинг - Статус</title>
       </Head>
 
-      <PageHeader title="Рейтинг отдела" />
+      <PageHeader
+        title={isManager ? 'Рейтинг отдела' : 'Топ-5 лидеров отдела'}
+        subtitle={!isManager ? 'Вам доступен топ-5 сотрудников по баллам' : undefined}
+      />
 
       <Card padding="md" className="mb-lg">
         <div className={`flex items-center gap-sm ${styles.filterWrap}`}>

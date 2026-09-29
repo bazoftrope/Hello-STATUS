@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import Head from 'next/head';
+import { useSession } from 'next-auth/react';
 import { Layout } from '@/components/Layout';
 import {
   Alert,
@@ -38,6 +39,20 @@ interface ParameterStat {
 
 interface PersonalStats {
   daily: DailyStat[];
+  byParameter: ParameterStat[];
+  totalPoints: number;
+  totalEntries: number;
+}
+
+interface DepartmentUserStat {
+  userId: string;
+  userName: string;
+  totalPoints: number;
+  entryCount: number;
+}
+
+interface DepartmentStats {
+  users: DepartmentUserStat[];
   byParameter: ParameterStat[];
   totalPoints: number;
   totalEntries: number;
@@ -225,12 +240,17 @@ function ParameterChart({ data }: { data: ParameterStat[] }) {
 }
 
 export default function StatsPage() {
+  const { data: session } = useSession();
+  const isManager = session?.user.role === 'manager';
   const [stats, setStats] = useState<PersonalStats | null>(null);
+  const [deptStats, setDeptStats] = useState<DepartmentStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [period, setPeriod] = useState<PeriodKey>('month');
   const [customFrom, setCustomFrom] = useState(monthStartISO());
   const [customTo, setCustomTo] = useState(todayISO());
+
+  const effectiveView: 'personal' | 'department' = isManager ? 'department' : 'personal';
 
   const load = useCallback(async () => {
     setIsLoading(true);
@@ -241,18 +261,29 @@ export default function StatsPage() {
       if (from) params.set('from', from);
       if (to) params.set('to', to);
 
-      const res = await fetch(`/api/stats/personal?${params.toString()}`);
-      const result = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        throw new Error(result.error || 'Ошибка загрузки статистики');
+      if (effectiveView === 'department') {
+        const res = await fetch(`/api/stats/department?${params.toString()}`);
+        const result = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          throw new Error(result.error || 'Ошибка загрузки статистики подразделения');
+        }
+        setDeptStats(result);
+        setStats(null);
+      } else {
+        const res = await fetch(`/api/stats/personal?${params.toString()}`);
+        const result = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          throw new Error(result.error || 'Ошибка загрузки статистики');
+        }
+        setStats(result);
+        setDeptStats(null);
       }
-      setStats(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Ошибка загрузки статистики');
     } finally {
       setIsLoading(false);
     }
-  }, [period, customFrom, customTo]);
+  }, [period, customFrom, customTo, effectiveView]);
 
   useEffect(() => {
     load();
@@ -264,7 +295,10 @@ export default function StatsPage() {
         <title>Статистика - Статус</title>
       </Head>
 
-      <PageHeader title="Моя статистика" />
+      <PageHeader
+        title={isManager ? 'Статистика подразделения' : 'Моя статистика'}
+        subtitle={isManager ? 'Агрегированные данные по всем сотрудникам отдела (без руководителя)' : undefined}
+      />
 
       <Card padding="md" className="mb-lg">
         <div className={`flex items-center gap-sm ${styles.filterWrap}`}>
@@ -310,6 +344,104 @@ export default function StatsPage() {
             <p className={`text-muted text-center ${styles.emptyState}`}>Загрузка...</p>
           </CardBody>
         </Card>
+      ) : effectiveView === 'department' && deptStats ? (
+        <>
+          <div className={styles.statCardsWrap}>
+            <Card padding="md" className={styles.statCard}>
+              <p className={`text-muted ${styles.statLabel}`}>Всего баллов (отдел)</p>
+              <p className={styles.statValue}>{formatWeight(deptStats.totalPoints)}</p>
+            </Card>
+            <Card padding="md" className={styles.statCard}>
+              <p className={`text-muted ${styles.statLabel}`}>Всего записей</p>
+              <p className={styles.statValue}>{deptStats.totalEntries}</p>
+            </Card>
+            <Card padding="md" className={styles.statCard}>
+              <p className={`text-muted ${styles.statLabel}`}>Сотрудников с баллами</p>
+              <p className={styles.statValue}>{deptStats.users.length}</p>
+            </Card>
+          </div>
+
+          {deptStats.users.length > 0 && (
+            <Card className="mb-lg">
+              <CardHeader>
+                <strong>Сотрудники отдела</strong>
+              </CardHeader>
+              <CardBody>
+                <Table>
+                  <thead>
+                    <tr>
+                      <Th>Сотрудник</Th>
+                      <Th align="center">Записей</Th>
+                      <Th align="right">Баллы</Th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {deptStats.users.map((u) => (
+                      <tr key={u.userId}>
+                        <Td>{u.userName}</Td>
+                        <Td align="center">{u.entryCount}</Td>
+                        <Td align="right" semibold>
+                          {formatWeight(u.totalPoints)}
+                        </Td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+              </CardBody>
+            </Card>
+          )}
+
+          {deptStats.byParameter.length > 0 && (
+            <Card className="mb-lg">
+              <CardHeader>
+                <strong>Разрез по параметрам (отдел)</strong>
+              </CardHeader>
+              <CardBody className={styles.chartScroll}>
+                <ParameterChart data={deptStats.byParameter} />
+              </CardBody>
+            </Card>
+          )}
+
+          {deptStats.byParameter.length > 0 && (
+            <Card>
+              <CardHeader>
+                <strong>Детали по параметрам (отдел)</strong>
+              </CardHeader>
+              <CardBody>
+                <Table>
+                  <thead>
+                    <tr>
+                      <Th>Параметр</Th>
+                      <Th align="center">Кол-во</Th>
+                      <Th align="center">Записей</Th>
+                      <Th align="right">Баллы</Th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {deptStats.byParameter.map((p) => (
+                      <tr key={p.parameterId}>
+                        <Td>{p.parameterName}</Td>
+                        <Td align="center">{p.totalQuantity}</Td>
+                        <Td align="center">{p.entryCount}</Td>
+                        <Td align="right" semibold>
+                          {formatWeight(p.totalPoints)}
+                        </Td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+              </CardBody>
+            </Card>
+          )}
+
+          {deptStats.users.length === 0 && deptStats.byParameter.length === 0 && (
+            <Card>
+              <CardBody>
+                <p className={`text-muted text-center ${styles.emptyState}`}>Нет данных за выбранный период.</p>
+              </CardBody>
+            </Card>
+          )}
+        </>
       ) : stats ? (
         <>
           <div className={styles.statCardsWrap}>

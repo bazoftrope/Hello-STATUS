@@ -15,6 +15,8 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   background-color: var(--color-surface);
+  color: var(--color-text);
+  color-scheme: light dark;
   transition: border-color var(--transition-fast);
 }
 
@@ -26,6 +28,27 @@
 
 .input::placeholder {
   color: var(--color-text-muted);
+}
+
+.input::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+}
+
+:root[data-theme='dark'] .input {
+  color-scheme: dark;
+}
+
+:root[data-theme='dark'] .input::-webkit-calendar-picker-indicator {
+  filter: invert(0.7);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .input {
+    color-scheme: dark;
+  }
+  :root:not([data-theme='light']) .input::-webkit-calendar-picker-indicator {
+    filter: invert(0.7);
+  }
 }
 
 .autoWidth {

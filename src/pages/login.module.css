@@ -9,10 +9,12 @@
 }
 
 .brandLogo {
-  height: 80px;
-  width: 100px;
-  margin-bottom: 0.75rem;
-  color: var(--color-text);
+  width: 100%;
+  max-width: 240px;
+  height: auto;
+  max-height: 72px;
+  margin: 0 auto 0.75rem;
+  display: block;
 }
 
 .loginSubtitle {

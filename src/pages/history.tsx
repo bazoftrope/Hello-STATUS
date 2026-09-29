@@ -19,11 +19,14 @@ import {
   Td,
   Th,
 } from '@/components/ui';
+import { useSession } from 'next-auth/react';
 import { monthStartISO, todayISO } from '@/lib/dates';
 import styles from './history.module.css';
 
 interface Entry {
   id: string;
+  userId?: string;
+  userName?: string;
   parameterName: string;
   quantity: number;
   points: number;
@@ -141,6 +144,8 @@ function formatWeight(value: number): string {
 }
 
 export default function HistoryPage() {
+  const { data: session } = useSession();
+  const isManager = session?.user.role === 'manager';
   const [entries, setEntries] = useState<Entry[]>([]);
   const [from, setFrom] = useState(monthStartISO());
   const [to, setTo] = useState(todayISO());
@@ -218,17 +223,21 @@ export default function HistoryPage() {
     }
   };
 
+  const pageTitle = isManager ? 'История активностей подразделения' : 'Моя история';
+  const pageHeadTitle = isManager ? 'История подразделения - Статус' : 'История - Статус';
+
   return (
     <Layout>
       <Head>
-        <title>История - Статус</title>
+        <title>{pageHeadTitle}</title>
       </Head>
 
       <PageHeader
-        title="Моя история"
+        title={pageTitle}
         subtitle={
           <>
             Баллов за период: <strong>{formatWeight(totalPoints)}</strong>
+            {isManager && <span className="text-muted"> · Все сотрудники отдела</span>}
           </>
         }
         actions={
@@ -280,6 +289,7 @@ export default function HistoryPage() {
               <thead>
                 <tr>
                   <Th>Дата</Th>
+                  {isManager && <Th>Сотрудник</Th>}
                   <Th>Параметр</Th>
                   <Th align="center">Кол-во</Th>
                   <Th align="right">Баллы</Th>
@@ -290,9 +300,11 @@ export default function HistoryPage() {
               <tbody>
                 {entries.map((entry) => {
                   const isToday = entry.entryDate === todayISO();
+                  const canEdit = isManager || isToday;
                   return (
                     <tr key={entry.id}>
                       <Td nowrap>{entry.entryDate}</Td>
+                      {isManager && <Td>{entry.userName ?? '—'}</Td>}
                       <Td>{entry.parameterName}</Td>
                       <Td align="center">{entry.quantity}</Td>
                       <Td align="right" semibold>
@@ -300,7 +312,7 @@ export default function HistoryPage() {
                       </Td>
                       <Td className="text-muted">{entry.comment ?? '—'}</Td>
                       <Td align="right">
-                        {isToday ? (
+                        {canEdit ? (
                           <div className={styles.actions}>
                             <Button
                               variant="outline"

@@ -16,6 +16,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ error: 'Метод не поддерживается' });
   }
 
+  if (session.user.role === 'manager') {
+    return res.status(403).json({ error: 'Руководители не ведут личные действия — доступна только статистика подразделения' });
+  }
+
   try {
     const period = parsePeriod(req.query.from, req.query.to);
     if (period === null) {

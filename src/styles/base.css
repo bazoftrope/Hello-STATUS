@@ -4,6 +4,10 @@
   padding: 0;
 }
 
+html {
+  color-scheme: light dark;
+}
+
 html,
 body {
   font-family: var(--font-sans);
@@ -35,4 +39,6 @@ select,
 textarea {
   font-family: inherit;
   font-size: inherit;
+  color: var(--color-text);
+  background-color: var(--color-surface);
 }

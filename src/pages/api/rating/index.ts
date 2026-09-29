@@ -23,6 +23,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     const result = await getByDepartment(session.user.departmentId, period);
+    // Сотрудник видит только топ-5 лидеров, руководитель — всех (без себя, фильтр в сервисе)
+    if (session.user.role !== 'manager') {
+      return res.status(200).json(result.slice(0, 5));
+    }
     return res.status(200).json(result);
   } catch (err) {
     console.error(`[API] ${req.method} /api/rating:`, err);

@@ -107,17 +107,21 @@ function ParameterFormModal({ title, initial, isSaving, onSubmit, onClose }: Par
             <FormLabel htmlFor="param-weight">Вес</FormLabel>
             <FormInput
               id="param-weight"
-              type="number"
-              step="0.1"
-              min="0.01"
-              max="1000"
+              type="text"
+              inputMode="decimal"
+              placeholder="Например: 7 или 2.5"
               value={weight}
-              onChange={(e) => setWeight(e.target.value)}
+              onChange={(e) => {
+                const v = e.target.value;
+                if (v === '' || /^[0-9]*[.,]?[0-9]*$/.test(v)) {
+                  setWeight(v);
+                }
+              }}
               required
               disabled={isSaving}
             />
             <p className={`text-muted mt-sm ${styles.hint}`}>
-              Баллы = вес × количество. Изменение веса не влияет на уже начисленные баллы.
+              Баллы = вес × количество. Изменение веса не влияет на уже начисленные баллы. Допустимо любое положительное значение до 1000 (например, 7, 2.5, 0.5).
             </p>
           </FormGroup>
         </ModalBody>

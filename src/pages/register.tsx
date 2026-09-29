@@ -13,6 +13,7 @@ import {
   FormInput,
   FormLabel,
 } from '@/components/ui';
+import { StatusLogo } from '@/components/StatusLogo';
 import styles from './register.module.css';
 
 export default function RegisterPage() {
@@ -86,7 +87,7 @@ export default function RegisterPage() {
       <CenterPage>
         <Card className={styles.registerCard}>
           <CardHeader className="text-center">
-            <img src="/icons/status.png" alt="Статус" className={styles.brandLogo} />
+            <StatusLogo className={styles.brandLogo} />
             <h1 className={styles.registerTitle}>Регистрация</h1>
             <p className={`text-muted ${styles.registerSubtitle}`}>
               Статус — Рейтинг продуктивности

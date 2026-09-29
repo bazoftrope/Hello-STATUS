@@ -107,6 +107,7 @@ export async function getByDepartment(
     .where(
       and(
         eq(users.departmentId, departmentId),
+        eq(users.role, 'employee'),
         filters.from ? gte(entries.entryDate, filters.from) : undefined,
         filters.to ? lte(entries.entryDate, filters.to) : undefined
       )
@@ -128,7 +129,11 @@ export async function isUserInDepartment(
   return rows.length > 0;
 }
 
-export async function create(userId: string, input: EntryInput): Promise<EntryDto> {
+export async function create(
+  userId: string,
+  input: EntryInput,
+  actor?: Actor
+): Promise<EntryDto> {
   const [parameter] = await db
     .select()
     .from(parameters)
@@ -140,6 +145,18 @@ export async function create(userId: string, input: EntryInput): Promise<EntryDt
   }
   if (parameter.isArchived) {
     throw new EntryError(400, 'Параметр архивирован и недоступен для новых записей');
+  }
+
+  // Руководители не ведут личные действия
+  if (actor && actor.role === 'manager' && actor.id === userId) {
+    throw new EntryError(403, 'Руководители не ведут личные действия. Используйте «Журнал записей» для добавления действий за сотрудников');
+  }
+  // Если actor — руководитель и создаёт за другого, проверяем отдел
+  if (actor && actor.role === 'manager' && actor.id !== userId) {
+    const allowed = await isUserInDepartment(userId, actor.departmentId);
+    if (!allowed) {
+      throw new EntryError(404, 'Сотрудник не найден');
+    }
   }
 
   const weightSnapshot = Number(parameter.weight);
@@ -162,6 +179,19 @@ export async function create(userId: string, input: EntryInput): Promise<EntryDt
   if (!created) {
     throw new EntryError(500, 'Не удалось создать запись');
   }
+
+  // Аудит: руководитель создал запись за сотрудника
+  if (actor && actor.role === 'manager' && actor.id !== userId) {
+    const raw = await getRawById(row.id);
+    if (raw) {
+      await writeAudit(actor.id, row.id, userId, 'create', raw, {
+        quantity: input.quantity,
+        entryDate: input.entryDate,
+        comment: input.comment?.trim() || null,
+      });
+    }
+  }
+
   return created;
 }
 
@@ -173,6 +203,10 @@ export async function update(
   const entry = await getRawById(id);
   if (!entry) {
     throw new EntryError(404, 'Запись не найдена');
+  }
+
+  if (actor.role === 'manager' && entry.userId === actor.id) {
+    throw new EntryError(403, 'Руководители не ведут личные действия');
   }
 
   const isAuthor = entry.userId === actor.id;
@@ -231,6 +265,10 @@ export async function remove(id: string, actor: Actor): Promise<void> {
   const entry = await getRawById(id);
   if (!entry) {
     throw new EntryError(404, 'Запись не найдена');
+  }
+
+  if (actor.role === 'manager' && entry.userId === actor.id) {
+    throw new EntryError(403, 'Руководители не ведут личные действия');
   }
 
   const isAuthor = entry.userId === actor.id;
@@ -453,7 +491,7 @@ async function writeAudit(
   actorId: string,
   entryId: string,
   entryUserId: string,
-  action: 'update' | 'delete',
+  action: 'update' | 'delete' | 'create',
   oldEntry: EntryRow,
   newEntry: { quantity: number; entryDate: string; comment: string | null } | null
 ): Promise<void> {
@@ -462,7 +500,7 @@ async function writeAudit(
     entryId,
     entryUserId,
     action,
-    oldValue: serializeEntry(oldEntry),
+    oldValue: action === 'create' ? null : serializeEntry(oldEntry),
     newValue: newEntry ? JSON.stringify(newEntry) : null,
   });
 }

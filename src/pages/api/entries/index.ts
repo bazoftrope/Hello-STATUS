@@ -49,8 +49,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(200).json(result);
       }
 
-      const result = await getByUser(session.user.id, period);
-      return res.status(200).json(result);
+      // Руководитель пытается получить свои личные записи — не положено
+      return res.status(403).json({ error: 'Руководители не ведут личные действия' });
     }
 
     if (req.method === 'POST') {
@@ -58,7 +58,43 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       if (!values) {
         return res.status(400).json({ error: errors.join('; ') });
       }
-      const created = await create(session.user.id, values);
+      const requestedUserId = (req.body as Record<string, unknown>).userId;
+      // Руководители не ведут личные действия: без userId им запрещено создавать за себя
+      if (session.user.role === 'manager') {
+        if (
+          requestedUserId === undefined ||
+          requestedUserId === null ||
+          requestedUserId === '' ||
+          requestedUserId === session.user.id
+        ) {
+          return res.status(403).json({
+            error: 'Руководители не ведут личные действия. Укажите сотрудника (userId) в «Журнале записей»',
+          });
+        }
+      }
+      // Руководитель может указать userId для создания записи за сотрудника
+      let targetUserId = session.user.id;
+      if (requestedUserId !== undefined && requestedUserId !== null && requestedUserId !== '') {
+        if (typeof requestedUserId !== 'string') {
+          return res.status(400).json({ error: 'Некорректный идентификатор сотрудника' });
+        }
+        if (session.user.role !== 'manager') {
+          return res.status(403).json({ error: 'Недостаточно прав' });
+        }
+        if (requestedUserId !== session.user.id) {
+          const allowed = await isUserInDepartment(requestedUserId, session.user.departmentId);
+          if (!allowed) {
+            return res.status(404).json({ error: 'Сотрудник не найден' });
+          }
+        }
+        targetUserId = requestedUserId;
+      }
+      const actor = {
+        id: session.user.id,
+        role: session.user.role as 'employee' | 'manager',
+        departmentId: session.user.departmentId,
+      };
+      const created = await create(targetUserId, values, actor);
       return res.status(201).json(created);
     }
 
